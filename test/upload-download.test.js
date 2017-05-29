@@ -235,7 +235,32 @@ describe('storage service', function() {
         done(err);
       });
   });
-
+  it('uploads file wrong mime type', function(done) {
+    request('http://localhost:' + app.get('port'))
+      .post('/imageContainers/album1/upload')
+      .attach('image', path.join(__dirname, './fixtures/test2.jpg'))
+      .set('Accept', 'application/json')
+      .set('Connection', 'keep-alive')
+      .expect('Content-Type', /json/)
+      .expect(400, function(err, res) {
+        assert(res.body.error);
+        done();
+      });
+  });
+  it('uploads file correct mime type', function(done) {
+    request('http://localhost:' + app.get('port'))
+      .post('/imageContainers/album1/upload')
+      .attach('image', path.join(__dirname, './fixtures/test.jpg'))
+      .set('Accept', 'application/json')
+      .set('Connection', 'keep-alive')
+      .expect('Content-Type', /json/)
+      .expect(200, function(err, res) {
+        assert.deepEqual(res.body, {'result': {'files': {'image': [
+          {'container': 'album1', 'name': 'image-test.jpg', 'originalFilename': 'test.jpg', 'type': 'image/jpeg', 'acl': 'public-read', 'size': 60475},
+        ]}, 'fields': {}}});
+        done();
+      });
+  });
   it('uploads file too large', function(done) {
     request('http://localhost:' + app.get('port'))
       .post('/imageContainers/album1/upload')
